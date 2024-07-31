@@ -4,6 +4,7 @@ import os
 import shutil
 import uuid
 
+import pandas as pd
 from datasets import Image, load_dataset
 from huggingface_hub import HfApi
 from loguru import logger
@@ -17,8 +18,8 @@ class HuggingFace:
     def download_dataset(
         self,
         dataset_id: str,
-        save_path: str = None,
-        image_key="image",
+        save_path: str | None = None,
+        image_key: str | None = "image",
         **dataset_kwargs,
     ) -> None:
         def add_image_filename(examples):
@@ -47,22 +48,39 @@ class HuggingFace:
             image.save(full_path)
 
     def list_datasets(
-        self, filter: str = "task_categories:image-classification", search: str = None
-    ):
+        self,
+        filter: str = "task_categories:image-classification",
+        search: str | None = None,
+    ) -> pd.DataFrame:
         datasets = self.api.list_datasets(filter=filter, search=search)
+        dataset_info = [d for d in datasets]
 
-        return [d for d in datasets]
+        df = pd.DataFrame(
+            [
+                {
+                    "id": info.id,
+                    "author": info.author,
+                    "sha": info.sha,
+                    "created_at": info.created_at,
+                    "last_modified": info.last_modified,
+                    "private": info.private,
+                    "gated": info.gated,
+                    "disabled": info.disabled,
+                    "downloads": info.downloads,
+                    "likes": info.likes,
+                    "paperswithcode_id": info.paperswithcode_id,
+                    "tags": ", ".join(info.tags) if info.tags else None,
+                }
+                for info in dataset_info
+            ]
+        )
 
-    def to_vl(self, vl_session: "VisualLayer", dataset_name: str = None) -> None:
+        return df
 
-        def make_dataset_tar():
-            shutil.make_archive(self.save_path, "tar", self.save_path)
-
+    def to_vl(self, vl_session: "VisualLayer", dataset_name: str | None = None) -> None:
         if dataset_name is None:
             dataset_name = self.save_path
-            dataset_name = dataset_name.replace("/", "_")
+            dataset_name = dataset_name.split("/")[-1]
 
-        make_dataset_tar()
+        shutil.make_archive(self.save_path, "tar", self.save_path)
         vl_session.create_dataset(dataset_name, f"{self.save_path}.tar")
-
-    
