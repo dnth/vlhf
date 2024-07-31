@@ -35,16 +35,17 @@ class HuggingFace:
         self.save_path = save_path or dataset_id
 
         def add_image_filename(examples):
+            image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff')
+
             image_paths = [img["path"] for img in examples[image_key]]
             examples["image_filename"] = []
 
             for path in image_paths:
-                if path is None:
+                if path is None or not path.lower().endswith(image_extensions):
                     image_filename = f"{uuid.uuid4()}.jpg"
                     examples["image_filename"].append(image_filename)
                 else:
                     examples["image_filename"].append(path)
-
             return examples
 
         def add_label_name(examples):
