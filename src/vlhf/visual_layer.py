@@ -15,6 +15,7 @@ class VisualLayer:
         try:
             logger.info(f"Creating dataset: {dataset_name}")
             self.session.create_dataset_archive(dataset_name, dataset_tar_path)
+            logger.info(f"Dataset {dataset_name} successfully created in Visual Layer!")
         except Exception as e:
             logger.error(f"Error creating dataset {dataset_name}: {e}")
             raise
