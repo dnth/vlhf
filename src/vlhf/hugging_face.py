@@ -53,12 +53,16 @@ class HuggingFace:
 
         return [d for d in datasets]
 
-    def to_vl(self, vl: "VisualLayer", dataset_name: str = None) -> None:
+    def to_vl(self, vl_session: "VisualLayer", dataset_name: str = None) -> None:
+
+        def make_dataset_tar():
+            shutil.make_archive(self.save_path, "tar", self.save_path)
+
         if dataset_name is None:
             dataset_name = self.save_path
+            dataset_name = dataset_name.replace("/", "_")
 
-        self.__make_dataset_tar()
-        vl.create_dataset(dataset_name, f"{self.save_path}.tar")
+        make_dataset_tar()
+        vl_session.create_dataset(dataset_name, f"{self.save_path}.tar")
 
-    def __make_dataset_tar(self):
-        shutil.make_archive(self.save_path, "tar", self.save_path)
+    

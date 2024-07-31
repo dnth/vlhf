@@ -3,7 +3,6 @@ from __future__ import annotations
 from vl_research.sdk.dataset_api import DatasetSession
 
 
-
 class VisualLayer:
     def __init__(self, user_id: str, env: str) -> None:
         self.user_id = user_id
