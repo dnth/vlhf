@@ -20,11 +20,20 @@ class HuggingFace:
         dataset_id: str,
         save_path: str | None = None,
         image_key: str | None = "image",
+        label_key: str | None = None,
         **dataset_kwargs,
     ) -> None:
         def add_image_filename(examples):
             image_paths = [img["path"] for img in examples[image_key]]
             examples["image_filename"] = image_paths
+            return examples
+
+        def add_label_name(examples):
+            labels = examples[label_key]
+            label_names = [
+                self.dataset.features[label_key].int2str(label) for label in labels
+            ]
+            examples["label_name"] = label_names
             return examples
 
         self.save_path = save_path or dataset_id
@@ -34,6 +43,9 @@ class HuggingFace:
         self.dataset = self.dataset.cast_column(image_key, Image(decode=False))
         self.dataset = self.dataset.map(add_image_filename, batched=True)
         self.dataset = self.dataset.cast_column(image_key, Image(decode=True))
+
+        if label_key:
+            self.dataset = self.dataset.map(add_label_name, batched=True)
 
         os.makedirs(self.save_path, exist_ok=True)
 
@@ -81,10 +93,24 @@ class HuggingFace:
 
         return df
 
-    def to_vl(self, vl_session: "VisualLayer", dataset_name: str | None = None) -> None:
+    def to_vl(
+        self,
+        vl_session: "VisualLayer",
+        dataset_name: str | None = None,
+        include_image_label: bool = False,
+    ) -> None:
+        
+        # if no dataset_name is provided, use the name of the dataset_id
         if dataset_name is None:
-            dataset_name = self.save_path
-            dataset_name = dataset_name.split("/")[-1]
+            dataset_name = self.save_path.split("/")[-1]
+
+        # whether to include image_label in the tar file
+        if include_image_label:
+            self.dataset.select_columns(
+                ["image_filename", "label_name"]
+            ).rename_columns(
+                {"image_filename": "filename", "label_name": "label"}
+            ).to_pandas().to_parquet(f"{self.save_path}/image_annotations.parquet")
 
         shutil.make_archive(self.save_path, "tar", self.save_path)
         vl_session.create_dataset(dataset_name, f"{self.save_path}.tar")
