@@ -39,13 +39,17 @@ class HuggingFace:
 
         for row in tqdm(self.dataset, desc="Saving images"):
             image = row[image_key]
-            image_filename = row["image_filename"]
 
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+
+            image_filename = row["image_filename"]
             if image_filename is None:
                 image_filename = f"{uuid.uuid4()}.jpg"
 
             full_path = os.path.join(self.save_path, image_filename)
-            image.save(full_path)
+
+            image.save(full_path, format="JPEG")
 
     def list_datasets(
         self,
