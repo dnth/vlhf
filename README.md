@@ -38,7 +38,7 @@ from vlhf.visual_layer import VisualLayer
 hf = HuggingFace(HF_TOKEN)
 vl = VisualLayer(VL_USER_ID, VL_ENV)
 ```
-List dataset on Hugging Face with the keyword "visual"
+List dataset on Hugging Face with the search term "visual"
 
 ```python
 hf.list_datasets(search="visual")
