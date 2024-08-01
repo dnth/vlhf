@@ -1,5 +1,7 @@
 # VLHF: Visual Layer - Hugging Face Integration
 
+![image](assets/vlhf.jpg)
+
 VLHF (Visual Layer - Hugging Face) is a Python package that provides a seamless interface for transferring datasets between Visual Layer and Hugging Face.
 
 ## Features
