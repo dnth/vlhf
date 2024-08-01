@@ -139,3 +139,6 @@ Upload to Visual Layer
 ```python
 hf.to_vl(vl_session=vl)
 ```
+
+Parameters:
++ `vl_session`: The authenticated Visual Layer session object.
