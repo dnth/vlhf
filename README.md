@@ -46,7 +46,7 @@ hf.list_datasets(search="visual")
 
 <table>
     <tr>
-        <td>id</td>
+        <th>id</th>
         <td>author</td>
         <td>sha</td>
         <td>created_at</td>
@@ -56,7 +56,7 @@ hf.list_datasets(search="visual")
         <td>tags</td>
     </tr>
     <tr>
-        <td>0</td>
+        <th>0</th>
         <td>visual-layer/oxford-iiit-pet-vl-enriched</td>
         <td>b4a70383...</td>
         <td>2024-07-04 06:15:06</td>
@@ -66,7 +66,7 @@ hf.list_datasets(search="visual")
         <td>task_categories:image-classification, task_cat...</td>
     </tr>
     <tr>
-        <td>1</td>
+        <th>1</th>
         <td>visual-layer/imagenet-1k-vl-enriched</td>
         <td>45107c4f...</td>
         <td>2024-07-09 08:56:33</td>
@@ -76,7 +76,7 @@ hf.list_datasets(search="visual")
         <td>task_categories:object-detection, task_categor...</td>
     </tr>
     <tr>
-        <td>2</td>
+        <th>2</th>
         <td>juletxara/visual-spatial-reasoning</td>
         <td>a07bec7a...</td>
         <td>2022-08-11 12:56:58</td>
@@ -86,7 +86,7 @@ hf.list_datasets(search="visual")
         <td>task_categories:image-classification, annotati...</td>
     </tr>
     <tr>
-        <td>3</td>
+        <th>3</th>
         <td>albertvillanova/visual-spatial-reasoning</td>
         <td>cbe3e224...</td>
         <td>2022-12-14 11:31:30</td>
@@ -96,7 +96,7 @@ hf.list_datasets(search="visual")
         <td>task_categories:image-classification, annotati...</td>
     </tr>
     <tr>
-        <td>4</td>
+        <th>4</th>
         <td>FastJobs/Visual_Emotional_Analysis</td>
         <td>31541d6d...</td>
         <td>2023-03-03 06:23:19</td>
@@ -106,7 +106,7 @@ hf.list_datasets(search="visual")
         <td>task_categories:image-classification, language...</td>
     </tr>
     <tr>
-        <td>5</td>
+        <th>5</th>
         <td>alitourani/moviefeats_visual</td>
         <td>ba9c47d7...</td>
         <td>2024-05-10 17:16:19</td>
