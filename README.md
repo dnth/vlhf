@@ -120,6 +120,8 @@ hf.list_datasets(search="visual")
     </tr>
 </table>
 
+### From HF to VL
+
 Download a dataset from Hugging Face
 
 ```python
@@ -142,3 +144,21 @@ hf.to_vl(vl_session=vl)
 
 Parameters:
 + `vl_session`: The authenticated Visual Layer session object.
+
+
+### From VL to HF
+Get dataset from Visual Layer
+
+```python
+dataset_id = "124aa35a-4fd3-11ef-ab8c-7e1db6b41710"
+
+vl_dataset = vl.get_dataset(dataset_id=dataset_id, pg_uri=VL_PG_URI)
+```
+
+Upload to Hugging Face
+
+```python
+hf_repo_id = "dnth/dog_food-vl-enriched"
+
+vl.to_hf(hf, hf_repo_id, vl_dataset)
+```
