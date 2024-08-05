@@ -25,7 +25,9 @@ class VisualLayer:
     def list_datasets(self):
         raise NotImplementedError
 
-    def to_hf(self, hf: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame) -> None:
+    def to_hf(
+        self, hf: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame
+    ) -> None:
         """
         Pushes a dataset to the Hugging Face repository.
         """
@@ -37,31 +39,29 @@ class VisualLayer:
         dataset.push_to_hub(hf_repo_id, token=hf.token)
 
     def get_dataset(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+        labels = self._get_labels(dataset_id, pg_uri)
+        images = self._get_images(dataset_id, pg_uri)
+
+        vl_dataset = images.join(
+            labels, left_on="id", right_on="image_id", how="left"
+        ).select("image_uri", "label")
+
+        return vl_dataset
+
+    def _get_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         logger.info("Reading labels from database")
-        labels = pl.read_database_uri(
-            f"select * from labels where dataset_id = '{dataset_id}'", pg_uri
-        )
-
-        image_labels = labels.filter(
+        query = f"SELECT * FROM labels WHERE dataset_id = '{dataset_id}'"
+        labels = pl.read_database_uri(query, pg_uri)
+        return labels.filter(
             (pl.col("type") == "IMAGE") & (pl.col("source") != "VL")
-        )
-        image_labels = image_labels.select("image_id", label="category_display_name")
+        ).select("image_id", label="category_display_name")
 
+    def _get_images(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         logger.info("Reading images from database")
-        images = pl.read_database_uri(
-            f"select * from images where dataset_id = '{dataset_id}'", pg_uri
-        )
-
-        images = images.with_columns(pl.col("metadata").str.json_decode())
-        images = images.select(
+        query = f"SELECT * FROM images WHERE dataset_id = '{dataset_id}'"
+        images = pl.read_database_uri(query, pg_uri)
+        return images.with_columns(pl.col("metadata").str.json_decode()).select(
             id="id",
             image_id=pl.col("original_uri").str.extract("([^/\.]+)\..+$"),
             image_uri="image_uri",
         )
-
-        images = images.join(
-            image_labels, left_on="id", right_on="image_id", how="left"
-        )
-
-        images = images.select("image_uri", "label")
-        return images
