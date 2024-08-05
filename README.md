@@ -160,5 +160,8 @@ Upload to Hugging Face
 ```python
 hf_repo_id = "dnth/dog_food-vl-enriched"
 
-vl.to_hf(hf, hf_repo_id, vl_dataset)
+vl.to_hf(hf_session=hf, hf_repo_id, vl_dataset)
 ```
+
+Parameters:
++ `hf_session`: The authenticated Hugging Face session object.
