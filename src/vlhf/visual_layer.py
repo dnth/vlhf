@@ -26,7 +26,7 @@ class VisualLayer:
         raise NotImplementedError
 
     def to_hf(
-        self, hf: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame
+        self, hf_session: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame
     ) -> None:
         """
         Pushes a dataset to the Hugging Face repository.
@@ -54,7 +54,7 @@ class VisualLayer:
         dataset = dataset.cast(features)
 
         logger.info(f"Pushing dataset to HF repository: {hf_repo_id}")
-        dataset.push_to_hub(hf_repo_id, token=hf.token)
+        dataset.push_to_hub(hf_repo_id, token=hf_session.token)
 
     def get_dataset(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         logger.info(f"Fetching dataset: {dataset_id}")
