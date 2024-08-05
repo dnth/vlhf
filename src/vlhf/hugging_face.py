@@ -14,7 +14,7 @@ from tqdm.auto import tqdm
 class HuggingFace:
     def __init__(self, token: str = None) -> None:
         self.api = HfApi(token=token)
-
+        self.token = token
         self.dataset = None
         self.save_path = None
         self.image_key = None
