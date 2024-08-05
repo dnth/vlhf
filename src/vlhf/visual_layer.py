@@ -25,7 +25,7 @@ class VisualLayer:
     def list_datasets(self):
         raise NotImplementedError
 
-    def to_hf(self, hf: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame):
+    def to_hf(self, hf: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame) -> None:
         """
         Pushes a dataset to the Hugging Face repository.
         """
