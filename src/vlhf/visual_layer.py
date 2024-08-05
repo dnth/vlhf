@@ -69,8 +69,6 @@ class VisualLayer:
             issues, left_on="id", right_on="image_id", how="left"
         ).select("image_uri", "label", "issues")
 
-        vl_dataset = vl_dataset.to_pandas()
-
         return vl_dataset
 
     def _get_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
