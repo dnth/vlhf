@@ -12,6 +12,7 @@ class VisualLayer:
         self.env = env
 
         self.session = DatasetSession(self.user_id, self.env)
+        logger.info("Visual Layer session created")
 
     def create_dataset(self, dataset_name: str, dataset_tar_path: str):
         try:

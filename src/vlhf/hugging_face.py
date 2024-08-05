@@ -19,6 +19,7 @@ class HuggingFace:
         self.save_path = None
         self.image_key = None
         self.label_key = None
+        logger.info("Hugging Face session created")
 
 
     def download_dataset(
