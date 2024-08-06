@@ -166,3 +166,12 @@ vl.to_hf(hf_session=hf, hf_repo_id, vl_dataset)
 
 Parameters:
 + `hf_session`: The authenticated Hugging Face session object.
+
+
+## Development
+
+Run pre-commit to lint and format the code:
+
+```bash
+pre-commit run --all-files
+```

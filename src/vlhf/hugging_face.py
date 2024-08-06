@@ -6,10 +6,10 @@ import uuid
 from typing import TYPE_CHECKING
 
 import pandas as pd
+from datasets import Image  # type: ignore
 from datasets import (
     Dataset,
     DatasetDict,
-    Image,  # type: ignore
     IterableDataset,
     IterableDatasetDict,
     load_dataset,

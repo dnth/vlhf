@@ -1,3 +1,4 @@
 pandas-stubs
 types-tqdm
 mypy
+pre-commit
