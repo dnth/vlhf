@@ -14,6 +14,7 @@ VLHF (Visual Layer - Hugging Face) is a Python package that provides a seamless 
 ## Installation
 
 ### Prerequisites
+Python 3.10 or higher is required.
 
 Before installing VLHF, you need to install the vl-research package:
 
