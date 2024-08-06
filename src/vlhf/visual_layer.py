@@ -42,7 +42,6 @@ class VisualLayer:
         # so we convert the polars dataframe to pandas
         # TODO: revisit this when polars support is better
         pd_dataset = vl_dataset_df.to_pandas()
-
         dataset = Dataset.from_pandas(pd_dataset)
         features = Features(
             {
@@ -52,12 +51,14 @@ class VisualLayer:
                     {
                         "confidence": Value("float64"),
                         "description": Value("string"),
+                        "duplicate_group_id": Value("string"),
                         "issue_type": Value("string"),
                     }
                 ],
             }
         )
         dataset = dataset.cast(features)
+        hf_session.dataset = dataset
 
         logger.info(f"Pushing dataset to HF repository: {hf_repo_id}")
         dataset.push_to_hub(hf_repo_id, token=hf_session.token)
@@ -128,12 +129,16 @@ class VisualLayer:
 
             issues = issues.filter(pl.col("cause").is_null())
 
-            issues.to_pandas().to_parquet("issues.parquet")
-
             issues = issues.select(
                 "image_id",
-                issues=pl.struct("confidence", "description", issue_type="name"),
+                issues=pl.struct(
+                    "confidence",
+                    "description",
+                    duplicate_group_id="issue_subject_id",
+                    issue_type="name",
+                ),
             )
+
             issues = issues.group_by("image_id").all()
 
             return issues
