@@ -175,3 +175,9 @@ Run pre-commit to lint and format the code:
 ```bash
 pre-commit run --all-files
 ```
+
+Run mypy to check for type errors:
+
+```bash
+mypy src/
+```
