@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import polars as pl
-from datasets import Dataset, Features, Sequence, Value
+from datasets import Dataset, Features, Value  # type: ignore
 from loguru import logger
-from vl_research.sdk.dataset_api import DatasetSession
+from vl_research.sdk.dataset_api import DatasetSession  # type: ignore
+
+if TYPE_CHECKING:
+    from vlhf.hugging_face import HuggingFace
 
 
 class VisualLayer:
@@ -114,6 +119,7 @@ class VisualLayer:
             issues = pl.read_database_uri(
                 f"SELECT * FROM image_issues WHERE dataset_id = '{dataset_id}'", pg_uri
             )
+
             logger.info(f"Retrieved {len(issues)} issues for dataset {dataset_id}")
 
             issues_types = pl.read_database_uri("SELECT * FROM issue_type", pg_uri)
@@ -121,6 +127,9 @@ class VisualLayer:
             issues = issues.join(issues_types, left_on="type_id", right_on="id")
 
             issues = issues.filter(pl.col("cause").is_null())
+
+            issues.to_pandas().to_parquet("issues.parquet")
+
             issues = issues.select(
                 "image_id",
                 issues=pl.struct("confidence", "description", issue_type="name"),
