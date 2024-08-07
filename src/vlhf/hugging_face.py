@@ -22,6 +22,33 @@ if TYPE_CHECKING:
     from vlhf.visual_layer import VisualLayer
 
 
+def convert_to_vl_object_annotations(dataset: Dataset) -> pd.DataFrame:
+    data = []
+
+    for row in dataset:
+        image_id = row["image_filename"]
+        filename = f"{image_id}"
+
+        if "objects" in row and "bbox" in row["objects"]:
+            for bbox, category_name in zip(
+                row["objects"]["bbox"], row["objects"]["category_name"]
+            ):
+                x, y, w, h = bbox
+
+                data.append(
+                    {
+                        "filename": filename,
+                        "col_x": x,
+                        "row_y": y,
+                        "width": w,
+                        "height": h,
+                        "label": category_name,
+                    }
+                )
+
+    return pd.DataFrame(data)
+
+
 class HuggingFace:
     def __init__(self, token: str) -> None:
         self.api = HfApi(token=token)
@@ -32,6 +59,8 @@ class HuggingFace:
         self.save_path: str | None = None
         self.image_key: str | None = None
         self.label_key: str | None = None
+        self.bbox_key: str | None = None
+        self.bbox_label_names: list[str] | None = None
         logger.info("Hugging Face session created")
 
     def download_dataset(
@@ -40,10 +69,14 @@ class HuggingFace:
         save_path: str | None = None,
         image_key: str | None = "image",
         label_key: str | None = None,
+        bbox_key: str | None = None,
+        bbox_label_names: list[str] | None = None,
         **dataset_kwargs,
     ) -> None:
         self.image_key = image_key
         self.label_key = label_key
+        self.bbox_key = bbox_key
+        self.bbox_label_names = bbox_label_names
         self.save_path = save_path or dataset_id
 
         def add_image_filename(examples):
@@ -60,7 +93,7 @@ class HuggingFace:
                     examples["image_filename"].append(path)
             return examples
 
-        def add_label_name(examples):
+        def add_image_label_name(examples):
             labels = examples[label_key]
             label_names = [
                 self.dataset.features[label_key].int2str(label) for label in labels
@@ -68,19 +101,33 @@ class HuggingFace:
             examples["label_name"] = label_names
             return examples
 
+        def add_category_name(example, label_list):
+            category_indices = example["objects"]["category"]
+            category_names = [label_list[idx] for idx in category_indices]
+            example["objects"]["category_name"] = category_names
+            return example
+
         logger.info(
             f"Downloading dataset {dataset_id} and saving to local path {self.save_path}"
         )
         self.dataset = load_dataset(dataset_id, split="all", **dataset_kwargs)
 
         self.dataset = self.dataset.cast_column(image_key, Image(decode=False))
+        logger.info("Adding image filename to dataset")
         self.dataset = self.dataset.map(add_image_filename, batched=True)
         self.dataset = self.dataset.cast_column(image_key, Image(decode=True))
 
+        if self.bbox_label_names is not None:
+            logger.info("Adding bbox label name to dataset")
+            self.dataset = self.dataset.map(
+                lambda x: add_category_name(x, self.bbox_label_names)
+            )
+
         # if label_key is provided, add label_name to the dataset feature
         if self.label_key:
-            self.dataset = self.dataset.map(add_label_name, batched=True)
+            self.dataset = self.dataset.map(add_image_label_name, batched=True)
 
+        self.save_path = os.path.join("saved_images", self.save_path)
         os.makedirs(self.save_path, exist_ok=True)
 
         for row in tqdm(self.dataset, desc="Saving images"):
@@ -129,7 +176,7 @@ class HuggingFace:
     ) -> None:
         logger.info("Preparing upload to Visual Layer")
 
-        # whether to include image_label in the tar file
+        # if label key is provided, create a parquet file with image_filename and label_name
         if self.label_key:
             if self.dataset is not None:
                 self.dataset.select_columns(
@@ -137,6 +184,11 @@ class HuggingFace:
                 ).rename_columns(
                     {"image_filename": "filename", "label_name": "label"}
                 ).to_pandas().to_parquet(f"{self.save_path}/image_annotations.parquet")
+
+        # if bbox key is provided, create a parquet file with annotations
+        if self.bbox_key and self.dataset is not None:
+            df = convert_to_vl_object_annotations(self.dataset)
+            df.to_parquet(f"{self.save_path}/object_annotations.parquet")
 
         # if no dataset_name is provided, use the name of the dataset_id
         if dataset_name is None and self.save_path is not None:
