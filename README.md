@@ -6,10 +6,13 @@ VLHF (Visual Layer - Hugging Face) is a Python package that provides a seamless 
 
 ## Features
 
-- Download datasets from Hugging Face to local storage.
-- Upload datasets from local storage to Visual Layer.
+- Download/Upload datasets from Hugging Face to local storage.
+- Download/Upload datasets from local storage to Visual Layer.
 - Search for datasets on Hugging Face.
-- Upload datasets from Visual Layer to Hugging Face. (WIP)
+
+> [!NOTE] 
+> Currently only works for image classification datasets. Datasets with bounding boxes are currently work in progress.
+
 
 ## Installation
 
