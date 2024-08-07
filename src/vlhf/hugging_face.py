@@ -22,6 +22,30 @@ if TYPE_CHECKING:
     from vlhf.visual_layer import VisualLayer
 
 
+def is_one_indexed(dataset: Dataset) -> bool | None:
+    all_categories = []
+    for item in dataset:
+        all_categories.extend(item["objects"]["category"])
+
+    min_category = min(all_categories)
+    max_category = max(all_categories)
+    unique_categories = set(all_categories)
+
+    logger.info(f"Minimum category label: {min_category}")
+    logger.info(f"Maximum category label: {max_category}")
+    logger.info(f"Number of unique categories: {len(unique_categories)}")
+
+    if 0 in unique_categories:
+        logger.info("Dataset appears to be 0-indexed")
+        return False
+    elif min_category == 1 and max_category == len(unique_categories):
+        logger.info("Dataset appears to be 1-indexed")
+        return True
+    else:
+        logger.info("Indexing is unclear, further investigation needed")
+        return None
+
+
 def convert_to_vl_object_annotations(dataset: Dataset) -> pd.DataFrame:
     data = []
 
@@ -101,7 +125,7 @@ class HuggingFace:
             examples["label_name"] = label_names
             return examples
 
-        def add_category_name(example, label_list):
+        def add_object_label_name(example, label_list):
             category_indices = example["objects"]["category"]
             category_names = [label_list[idx] for idx in category_indices]
             example["objects"]["category_name"] = category_names
@@ -117,10 +141,15 @@ class HuggingFace:
         self.dataset = self.dataset.map(add_image_filename, batched=True)
         self.dataset = self.dataset.cast_column(image_key, Image(decode=True))
 
-        if self.bbox_label_names is not None:
+        if self.bbox_label_names:
             logger.info("Adding bbox label name to dataset")
+
+            # check if bbox label is 1-indexed
+            if is_one_indexed(self.dataset):
+                self.bbox_label_names = ["Unknown"] + self.bbox_label_names
+
             self.dataset = self.dataset.map(
-                lambda x: add_category_name(x, self.bbox_label_names)
+                lambda x: add_object_label_name(x, self.bbox_label_names)
             )
 
         # if label_key is provided, add label_name to the dataset feature
