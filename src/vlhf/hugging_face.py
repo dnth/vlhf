@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from vlhf.visual_layer import VisualLayer
 
 
-def is_one_indexed(dataset: Dataset) -> bool | None:
+def is_one_indexed(dataset: Dataset) -> bool:
     all_categories = []
     for item in dataset:
         all_categories.extend(item["objects"]["category"])
@@ -30,10 +30,6 @@ def is_one_indexed(dataset: Dataset) -> bool | None:
     min_category = min(all_categories)
     max_category = max(all_categories)
     unique_categories = set(all_categories)
-
-    logger.info(f"Minimum category label: {min_category}")
-    logger.info(f"Maximum category label: {max_category}")
-    logger.info(f"Number of unique categories: {len(unique_categories)}")
 
     if 0 in unique_categories:
         logger.info("Dataset appears to be 0-indexed")
@@ -43,7 +39,7 @@ def is_one_indexed(dataset: Dataset) -> bool | None:
         return True
     else:
         logger.info("Indexing is unclear, further investigation needed")
-        return None
+        return False
 
 
 def convert_to_vl_object_annotations(dataset: Dataset) -> pd.DataFrame:
