@@ -12,9 +12,10 @@ if TYPE_CHECKING:
 
 
 class VisualLayer:
-    def __init__(self, user_id: str, env: str) -> None:
+    def __init__(self, user_id: str, env: str, pg_uri: str) -> None:
         self.user_id = user_id
         self.env = env
+        self.pg_uri = pg_uri
 
         self.session = DatasetSession(self.user_id, self.env)
         logger.info("Visual Layer session created")
@@ -41,6 +42,14 @@ class VisualLayer:
         # pandas has better support in hf datasets currently
         # so we convert the polars dataframe to pandas
         # TODO: revisit this when polars support is better
+
+        vl_dataset_df = vl_dataset_df.with_columns(
+            [
+                pl.col("image_issues").fill_null([]),
+                pl.col("object_labels").fill_null([]),
+            ]
+        )
+
         pd_dataset = vl_dataset_df.to_pandas()
         dataset = Dataset.from_pandas(pd_dataset)
         features = Features(
@@ -70,13 +79,13 @@ class VisualLayer:
         logger.info(f"Pushing dataset to HF repository: {hf_repo_id}")
         dataset.push_to_hub(hf_repo_id, token=hf_session.token)
 
-    def get_dataset(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def get_dataset(self, dataset_id: str) -> pl.DataFrame:
         logger.info(f"Fetching dataset: {dataset_id}")
 
-        images = self._get_images(dataset_id, pg_uri)
-        image_labels = self._get_image_labels(dataset_id, pg_uri)
-        object_labels = self._get_object_labels(dataset_id, pg_uri)
-        image_issues = self._get_image_issues(dataset_id, pg_uri)
+        images = self._get_images(dataset_id)
+        image_labels = self._get_image_labels(dataset_id)
+        object_labels = self._get_object_labels(dataset_id)
+        image_issues = self._get_image_issues(dataset_id)
 
         vl_dataset = images.join(
             image_labels, left_on="id", right_on="image_id", how="left"
@@ -92,7 +101,7 @@ class VisualLayer:
 
         return vl_dataset
 
-    def _get_image_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_image_labels(self, dataset_id: str) -> pl.DataFrame:
         try:
             query = f"""
             SELECT 
@@ -104,14 +113,14 @@ class VisualLayer:
                 AND type = 'IMAGE' 
             """
             # TODO: add source != 'VL' to the query
-            image_labels = pl.read_database_uri(query, pg_uri)
+            image_labels = pl.read_database_uri(query, self.pg_uri)
             logger.info(f"Retrieved {len(image_labels)} image labels")
             return image_labels
         except Exception as e:
             logger.error(f"Error retrieving image labels: {str(e)}")
             raise
 
-    def _get_object_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_object_labels(self, dataset_id: str) -> pl.DataFrame:
         try:
             query = f"""
             SELECT 
@@ -125,7 +134,7 @@ class VisualLayer:
                 AND type = 'OBJECT' 
             """
             # TODO: add source != 'VL' to the query
-            objects = pl.read_database_uri(query, pg_uri)
+            objects = pl.read_database_uri(query, self.pg_uri)
             objects = objects.select(
                 "image_id",
                 object_labels=pl.struct(
@@ -140,10 +149,10 @@ class VisualLayer:
             logger.error(f"Error retrieving object labels: {str(e)}")
             raise
 
-    def _get_images(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_images(self, dataset_id: str) -> pl.DataFrame:
         try:
             query = f"SELECT * FROM images WHERE dataset_id = '{dataset_id}'"
-            images = pl.read_database_uri(query, pg_uri)
+            images = pl.read_database_uri(query, self.pg_uri)
             processed_images = images.with_columns(
                 pl.col("metadata").str.json_decode()
             ).select(
@@ -157,15 +166,16 @@ class VisualLayer:
             logger.error(f"Error retrieving images: {str(e)}")
             raise
 
-    def _get_image_issues(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_image_issues(self, dataset_id: str) -> pl.DataFrame:
         try:
             issues = pl.read_database_uri(
-                f"SELECT * FROM image_issues WHERE dataset_id = '{dataset_id}'", pg_uri
+                f"SELECT * FROM image_issues WHERE dataset_id = '{dataset_id}'",
+                self.pg_uri,
             )
 
             logger.info(f"Retrieved {len(issues)} image issues")
 
-            issues_types = pl.read_database_uri("SELECT * FROM issue_type", pg_uri)
+            issues_types = pl.read_database_uri("SELECT * FROM issue_type", self.pg_uri)
 
             issues = issues.join(issues_types, left_on="type_id", right_on="id")
 
