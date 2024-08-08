@@ -66,6 +66,7 @@ class VisualLayer:
     def get_dataset(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         logger.info(f"Fetching dataset: {dataset_id}")
         image_labels = self._get_image_labels(dataset_id, pg_uri)
+        object_labels = self._get_object_labels(dataset_id, pg_uri)
         images = self._get_images(dataset_id, pg_uri)
         image_issues = self._get_image_issues(dataset_id, pg_uri)
 
@@ -74,14 +75,19 @@ class VisualLayer:
         )
 
         vl_dataset = vl_dataset.join(
+            object_labels, left_on="id", right_on="image_id", how="left"
+        )
+
+        vl_dataset = vl_dataset.join(
             image_issues, left_on="id", right_on="image_id", how="left"
-        ).select("image_uri", "label", "issues")
+        ).select("image_uri", "label", "issues", "object_labels")
 
         return vl_dataset
 
     def _get_image_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         try:
             logger.info(f"Reading labels from database for dataset: {dataset_id}")
+            # TODO: handle case where labels contains OBJECT and IMAGE types
             query = f"SELECT * FROM labels WHERE dataset_id = '{dataset_id}'"
             labels = pl.read_database_uri(query, pg_uri)
             filtered_labels = labels.filter(
@@ -91,6 +97,38 @@ class VisualLayer:
                 f"Retrieved {len(filtered_labels)} labels for dataset {dataset_id}"
             )
             return filtered_labels
+        except Exception as e:
+            logger.error(f"Error retrieving labels for dataset {dataset_id}: {str(e)}")
+            raise
+
+    def _get_object_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+        try:
+            logger.info(
+                f"Reading object labels from database for dataset: {dataset_id}"
+            )
+            query = f"""
+            SELECT 
+                image_id, 
+                id AS bbox_id,
+                category_display_name AS object_label, 
+                bounding_box AS bbox
+            FROM labels 
+            WHERE 
+                dataset_id = '{dataset_id}' 
+                AND type = 'OBJECT' 
+                AND source != 'VL'
+            """
+            objects = pl.read_database_uri(query, pg_uri)
+            objects = objects.select(
+                "image_id",
+                object_labels=pl.struct(
+                    label="object_label", bbox="bbox", bbox_id="bbox_id"
+                ),
+            )
+            objects = objects.group_by("image_id").all()
+
+            logger.info(f"Retrieved {len(objects)} labels for dataset {dataset_id}")
+            return objects
         except Exception as e:
             logger.error(f"Error retrieving labels for dataset {dataset_id}: {str(e)}")
             raise
