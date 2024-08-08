@@ -17,6 +17,8 @@ class VisualLayer:
         self.env = env
         self.pg_uri = pg_uri
 
+        self.dataset_id: str | None = None
+
         self.session = DatasetSession(self.user_id, self.env)
         logger.info("Visual Layer session created")
 
@@ -80,12 +82,15 @@ class VisualLayer:
         dataset.push_to_hub(hf_repo_id, token=hf_session.token)
 
     def get_dataset(self, dataset_id: str) -> pl.DataFrame:
+        self.dataset_id = dataset_id
+
         logger.info(f"Fetching dataset: {dataset_id}")
 
-        images = self._get_images(dataset_id)
-        image_labels = self._get_image_labels(dataset_id)
-        object_labels = self._get_object_labels(dataset_id)
-        image_issues = self._get_image_issues(dataset_id)
+        images = self._get_images()
+        image_labels = self._get_image_labels()
+        object_labels = self._get_object_labels()
+        image_issues = self._get_image_issues()
+        # TODO: get object issues
 
         vl_dataset = images.join(
             image_labels, left_on="id", right_on="image_id", how="left"
@@ -101,7 +106,7 @@ class VisualLayer:
 
         return vl_dataset
 
-    def _get_image_labels(self, dataset_id: str) -> pl.DataFrame:
+    def _get_image_labels(self) -> pl.DataFrame:
         try:
             query = f"""
             SELECT 
@@ -109,7 +114,7 @@ class VisualLayer:
                 category_display_name AS image_label
             FROM labels 
             WHERE 
-                dataset_id = '{dataset_id}' 
+                dataset_id = '{self.dataset_id}' 
                 AND type = 'IMAGE' 
             """
             # TODO: add source != 'VL' to the query
@@ -120,7 +125,7 @@ class VisualLayer:
             logger.error(f"Error retrieving image labels: {str(e)}")
             raise
 
-    def _get_object_labels(self, dataset_id: str) -> pl.DataFrame:
+    def _get_object_labels(self) -> pl.DataFrame:
         try:
             query = f"""
             SELECT 
@@ -130,7 +135,7 @@ class VisualLayer:
                 bounding_box AS bbox
             FROM labels 
             WHERE 
-                dataset_id = '{dataset_id}' 
+                dataset_id = '{self.dataset_id}' 
                 AND type = 'OBJECT' 
             """
             # TODO: add source != 'VL' to the query
@@ -149,38 +154,39 @@ class VisualLayer:
             logger.error(f"Error retrieving object labels: {str(e)}")
             raise
 
-    def _get_images(self, dataset_id: str) -> pl.DataFrame:
+    def _get_images(self) -> pl.DataFrame:
         try:
-            query = f"SELECT * FROM images WHERE dataset_id = '{dataset_id}'"
+            query = f"""
+            SELECT 
+                id,
+                REGEXP_REPLACE(original_uri, '.+/([^/\.]+)\..+$', '\\1') AS image_id,
+                image_uri
+            FROM 
+                images
+            WHERE 
+                dataset_id = '{self.dataset_id}'
+            """
+
             images = pl.read_database_uri(query, self.pg_uri)
-            processed_images = images.with_columns(
-                pl.col("metadata").str.json_decode()
-            ).select(
-                id="id",
-                image_id=pl.col("original_uri").str.extract("([^/\.]+)\..+$"),
-                image_uri="image_uri",
-            )
-            logger.info(f"Retrieved and processed {len(processed_images)} images")
-            return processed_images
+
+            logger.info(f"Retrieved and processed {len(images)} images")
+            return images
         except Exception as e:
             logger.error(f"Error retrieving images: {str(e)}")
             raise
 
-    def _get_image_issues(self, dataset_id: str) -> pl.DataFrame:
+    def _get_image_issues(self) -> pl.DataFrame:
         try:
             issues = pl.read_database_uri(
-                f"SELECT * FROM image_issues WHERE dataset_id = '{dataset_id}'",
+                f"SELECT * FROM image_issues WHERE dataset_id = '{self.dataset_id}'",
                 self.pg_uri,
             )
-
             logger.info(f"Retrieved {len(issues)} image issues")
 
             issues_types = pl.read_database_uri("SELECT * FROM issue_type", self.pg_uri)
 
             issues = issues.join(issues_types, left_on="type_id", right_on="id")
-
             issues = issues.filter(pl.col("cause").is_null())
-
             issues = issues.select(
                 "image_id",
                 image_issues=pl.struct(
@@ -190,11 +196,12 @@ class VisualLayer:
                     issue_type="name",
                 ),
             )
-
             issues = issues.group_by("image_id").all()
-
             return issues
 
         except Exception as e:
             logger.error(f"Error retrieving image issues: {str(e)}")
             raise
+
+    def _get_object_issues(self) -> pl.DataFrame:
+        raise NotImplementedError
