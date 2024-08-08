@@ -65,19 +65,21 @@ class VisualLayer:
 
     def get_dataset(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         logger.info(f"Fetching dataset: {dataset_id}")
-        labels = self._get_labels(dataset_id, pg_uri)
+        image_labels = self._get_image_labels(dataset_id, pg_uri)
         images = self._get_images(dataset_id, pg_uri)
-        issues = self._get_issues(dataset_id, pg_uri)
+        image_issues = self._get_image_issues(dataset_id, pg_uri)
 
-        vl_dataset = images.join(labels, left_on="id", right_on="image_id", how="left")
+        vl_dataset = images.join(
+            image_labels, left_on="id", right_on="image_id", how="left"
+        )
 
         vl_dataset = vl_dataset.join(
-            issues, left_on="id", right_on="image_id", how="left"
+            image_issues, left_on="id", right_on="image_id", how="left"
         ).select("image_uri", "label", "issues")
 
         return vl_dataset
 
-    def _get_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_image_labels(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         try:
             logger.info(f"Reading labels from database for dataset: {dataset_id}")
             query = f"SELECT * FROM labels WHERE dataset_id = '{dataset_id}'"
@@ -113,7 +115,7 @@ class VisualLayer:
             logger.error(f"Error retrieving images for dataset {dataset_id}: {str(e)}")
             raise
 
-    def _get_issues(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
+    def _get_image_issues(self, dataset_id: str, pg_uri: str) -> pl.DataFrame:
         try:
             logger.info(f"Fetching issues for dataset: {dataset_id}")
 
