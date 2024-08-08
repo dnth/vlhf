@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import polars as pl
-from datasets import Dataset, Features, Value  # type: ignore
+from datasets import Dataset, Features, Value, Sequence  # type: ignore
 from loguru import logger
 from vl_research.sdk.dataset_api import DatasetSession  # type: ignore
 
@@ -46,13 +46,20 @@ class VisualLayer:
         features = Features(
             {
                 "image_uri": Value("string"),
-                "label": Value("string"),
-                "issues": [
+                "image_label": Value("string"),
+                "image_issues": [
                     {
                         "confidence": Value("float64"),
                         "description": Value("string"),
                         "duplicate_group_id": Value("string"),
                         "issue_type": Value("string"),
+                    }
+                ],
+                "object_labels": [
+                    {
+                        "label": Value("string"),
+                        "bbox": Sequence(Value("float64")),
+                        "bbox_id": Value("string"),
                     }
                 ],
             }
@@ -95,8 +102,8 @@ class VisualLayer:
             WHERE 
                 dataset_id = '{dataset_id}' 
                 AND type = 'IMAGE' 
-                AND source != 'VL'
             """
+            # TODO: add source != 'VL' to the query
             image_labels = pl.read_database_uri(query, pg_uri)
             logger.info(f"Retrieved {len(image_labels)} image labels")
             return image_labels
@@ -116,8 +123,8 @@ class VisualLayer:
             WHERE 
                 dataset_id = '{dataset_id}' 
                 AND type = 'OBJECT' 
-                AND source != 'VL'
             """
+            # TODO: add source != 'VL' to the query
             objects = pl.read_database_uri(query, pg_uri)
             objects = objects.select(
                 "image_id",
