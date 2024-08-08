@@ -43,7 +43,7 @@ from vlhf.hugging_face import HuggingFace
 from vlhf.visual_layer import VisualLayer
 
 hf = HuggingFace(HF_TOKEN)
-vl = VisualLayer(VL_USER_ID, VL_ENV)
+vl = VisualLayer(VL_USER_ID, VL_ENV, VL_PG_URI)
 ```
 List dataset on Hugging Face with the search term "visual"
 
@@ -156,7 +156,7 @@ Get dataset from Visual Layer
 ```python
 dataset_id = "124aa35a-4fd3-11ef-ab8c-7e1db6b41710"
 
-vl_dataset = vl.get_dataset(dataset_id=dataset_id, pg_uri=VL_PG_URI)
+vl_dataset = vl.get_dataset(dataset_id=dataset_id)
 ```
 
 Upload to Hugging Face
