@@ -219,3 +219,9 @@ Run mypy to check for type errors:
 ```bash
 mypy src/
 ```
+
+Run pytest to run the tests:
+
+```bash
+pytest tests/
+```
