@@ -208,6 +208,12 @@ Parameters:
 
 ## Development
 
+Install the development dependencies:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
 Run pre-commit to lint and format the code:
 
 ```bash
