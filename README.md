@@ -155,16 +155,81 @@ Get dataset from Visual Layer
 
 ```python
 dataset_id = "124aa35a-4fd3-11ef-ab8c-7e1db6b41710"
-
-vl_dataset = vl.get_dataset(dataset_id=dataset_id)
+vl.get_dataset(dataset_id=dataset_id) # returns a polars DataFrame
 ```
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>image_uri</th>
+      <th>image_label</th>
+      <th>image_issues</th>
+      <th>object_labels</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>dog</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>dog</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>muffin</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>chicken</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>dog</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>muffin</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>muffin</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>dog</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+    <tr>
+      <td>https://d2iycf…</td>
+      <td>dog</td>
+      <td>null</td>
+      <td>null</td>
+    </tr>
+  </tbody>
+</table>
 
 Upload to Hugging Face
 
 ```python
 hf_repo_id = "dnth/dog_food-vl-enriched"
-
-vl.to_hf(hf_session=hf, hf_repo_id, vl_dataset)
+vl.to_hf(hf_session=hf, hf_repo_id)
 ```
 
 Parameters:

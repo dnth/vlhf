@@ -81,6 +81,7 @@ class HuggingFace:
         self.label_key: str | None = None
         self.bbox_key: str | None = None
         self.bbox_label_names: list[str] | None = None
+
         logger.info("Hugging Face session created")
 
     def download_dataset(

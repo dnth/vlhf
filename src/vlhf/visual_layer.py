@@ -16,10 +16,10 @@ class VisualLayer:
         self.user_id = user_id
         self.env = env
         self.pg_uri = pg_uri
-
         self.dataset_id: str | None = None
-
+        self.dataset: pl.DataFrame | None = None
         self.session = DatasetSession(self.user_id, self.env)
+
         logger.info("Visual Layer session created")
 
     def create_dataset(self, dataset_name: str, dataset_tar_path: str):
@@ -34,9 +34,7 @@ class VisualLayer:
     def list_datasets(self):
         raise NotImplementedError
 
-    def to_hf(
-        self, hf_session: "HuggingFace", hf_repo_id: str, vl_dataset_df: pl.DataFrame
-    ) -> None:
+    def to_hf(self, hf_session: "HuggingFace", hf_repo_id: str) -> None:
         """
         Pushes a dataset to the Hugging Face repository.
         """
@@ -45,14 +43,16 @@ class VisualLayer:
         # so we convert the polars dataframe to pandas
         # TODO: revisit this when polars support is better
 
-        vl_dataset_df = vl_dataset_df.with_columns(
-            [
-                pl.col("image_issues").fill_null([]),
-                pl.col("object_labels").fill_null([]),
-            ]
-        )
+        if self.dataset is not None:
+            self.dataset = self.dataset.with_columns(
+                [
+                    pl.col("image_issues").fill_null([]),
+                    pl.col("object_labels").fill_null([]),
+                ]
+            )
 
-        pd_dataset = vl_dataset_df.to_pandas()
+            pd_dataset = self.dataset.to_pandas()
+
         dataset = Dataset.from_pandas(pd_dataset)
         features = Features(
             {
@@ -104,6 +104,7 @@ class VisualLayer:
             image_issues, left_on="id", right_on="image_id", how="left"
         ).select("image_uri", "image_label", "image_issues", "object_labels")
 
+        self.dataset = vl_dataset
         return vl_dataset
 
     def _get_image_labels(self) -> pl.DataFrame:
