@@ -92,6 +92,7 @@ class HuggingFace:
         label_key: str | None = None,
         bbox_key: str | None = None,
         bbox_label_names: list[str] | None = None,
+        num_images: int | None = None,
         **dataset_kwargs,
     ) -> None:
         self.image_key = image_key
@@ -132,6 +133,20 @@ class HuggingFace:
             f"Downloading dataset {dataset_id} and saving to local path {self.save_path}"
         )
         self.dataset = load_dataset(dataset_id, split="all", **dataset_kwargs)
+
+        # select only a subset of the dataset if num_images is provided
+        if num_images is not None:
+            if num_images < 0:
+                logger.error("num_images must be a positive integer")
+                raise
+            elif num_images > len(self.dataset):
+                logger.error(
+                    f"num_images exceeds the number of images in the dataset - {len(self.dataset)}"
+                )
+                raise
+            else:
+                logger.info(f"Selecting first {num_images} images")
+                self.dataset = self.dataset.select(range(num_images))
 
         self.dataset = self.dataset.cast_column(image_key, Image(decode=False))
         logger.info("Adding image filename to dataset")
