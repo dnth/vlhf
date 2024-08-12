@@ -205,6 +205,8 @@ vl.to_hf(hf_session=hf, hf_repo_id)
 Parameters:
 + `hf_session`: The authenticated Hugging Face session object.
 
+> [!NOTE]
+> See the uploaded dataset on Hugging Face [here](https://huggingface.co/datasets/dnth/dog_food-vl-enriched).
 
 ## Development
 
