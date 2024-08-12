@@ -158,7 +158,7 @@ dataset_id = "124aa35a-4fd3-11ef-ab8c-7e1db6b41710"
 vl.get_dataset(dataset_id=dataset_id) # returns a polars DataFrame
 ```
 
-<table cellpadding="5" cellspacing="0">
+<table>
   <thead>
     <tr>
       <th>image_uri</th>
