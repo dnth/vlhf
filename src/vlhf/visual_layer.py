@@ -105,7 +105,7 @@ class VisualLayer:
         ).select("image_uri", "image_label", "image_issues", "object_labels")
 
         self.dataset = vl_dataset
-        return vl_dataset
+        return vl_dataset.to_pandas()
 
     def _get_image_labels(self) -> pl.DataFrame:
         try:

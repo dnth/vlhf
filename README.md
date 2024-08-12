@@ -158,7 +158,7 @@ dataset_id = "124aa35a-4fd3-11ef-ab8c-7e1db6b41710"
 vl.get_dataset(dataset_id=dataset_id) # returns a polars DataFrame
 ```
 
-<table border="1">
+<table cellpadding="5" cellspacing="0">
   <thead>
     <tr>
       <th>image_uri</th>
@@ -169,58 +169,28 @@ vl.get_dataset(dataset_id=dataset_id) # returns a polars DataFrame
   </thead>
   <tbody>
     <tr>
-      <td>https://d2iycf…</td>
-      <td>dog</td>
-      <td>null</td>
-      <td>null</td>
+      <td>https://d2iycffepdu1yp.cloudfront.net/273b1d8a...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>[{'label': 'enemy', 'bbox': [147, 201, 33, 111...</td>
     </tr>
     <tr>
-      <td>https://d2iycf…</td>
-      <td>dog</td>
-      <td>null</td>
-      <td>null</td>
+      <td>https://d2iycffepdu1yp.cloudfront.net/273b1d8a...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
     </tr>
     <tr>
-      <td>https://d2iycf…</td>
-      <td>muffin</td>
-      <td>null</td>
-      <td>null</td>
+      <td>https://d2iycffepdu1yp.cloudfront.net/273b1d8a...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>[{'label': 'teammate', 'bbox': [144, 149, 11, ...</td>
     </tr>
     <tr>
-      <td>https://d2iycf…</td>
-      <td>chicken</td>
-      <td>null</td>
-      <td>null</td>
-    </tr>
-    <tr>
-      <td>https://d2iycf…</td>
-      <td>dog</td>
-      <td>null</td>
-      <td>null</td>
-    </tr>
-    <tr>
-      <td>https://d2iycf…</td>
-      <td>muffin</td>
-      <td>null</td>
-      <td>null</td>
-    </tr>
-    <tr>
-      <td>https://d2iycf…</td>
-      <td>muffin</td>
-      <td>null</td>
-      <td>null</td>
-    </tr>
-    <tr>
-      <td>https://d2iycf…</td>
-      <td>dog</td>
-      <td>null</td>
-      <td>null</td>
-    </tr>
-    <tr>
-      <td>https://d2iycf…</td>
-      <td>dog</td>
-      <td>null</td>
-      <td>null</td>
+      <td>https://d2iycffepdu1yp.cloudfront.net/273b1d8a...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>[{'label': 'planted spike', 'bbox': [174, 149,...</td>
     </tr>
   </tbody>
 </table>
