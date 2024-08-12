@@ -9,10 +9,7 @@ def token():
 
 
 def test_huggingface_initialization(token):
-    # Act
     hf = HuggingFace(token)
-
-    # Assert
     assert isinstance(hf.api, HfApi)
     assert hf.token == token
     assert hf.dataset is None
