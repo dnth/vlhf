@@ -2,3 +2,5 @@ pandas-stubs
 types-tqdm
 mypy
 pre-commit
+pytest
+pytest-mock
