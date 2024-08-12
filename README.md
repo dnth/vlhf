@@ -132,6 +132,7 @@ Parameters:
 + `dataset_id`: The dataset ID on Hugging Face datasets.
 + `image_key`: The column name in the dataset that contains PIL images.
 + `label_key`: The column name containing image classification labels.
++ `num_images` (Optional): The top N number of images to download.
 
 
 > [!NOTE]  
