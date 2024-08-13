@@ -1,20 +1,27 @@
 import pytest
-from vlhf.hugging_face import HuggingFace
-from huggingface_hub import HfApi
+from src.vlhf.hugging_face import HuggingFace
+from unittest.mock import patch
+
+
+class MockHfApi:
+    def __init__(self, token):
+        self.token = token
 
 
 @pytest.fixture
-def token():
-    return "some_random_token"
+def hugging_face_instance():
+    with patch("src.vlhf.hugging_face.HfApi", new=MockHfApi):
+        return HuggingFace(token="test_token")
 
 
-def test_huggingface_initialization(token):
-    hf = HuggingFace(token)
-    assert isinstance(hf.api, HfApi)
-    assert hf.token == token
-    assert hf.dataset is None
-    assert hf.save_path is None
-    assert hf.image_key is None
-    assert hf.label_key is None
-    assert hf.bbox_key is None
-    assert hf.bbox_label_names is None
+def test_hugging_face_initialization(hugging_face_instance):
+    assert hugging_face_instance.token == "test_token"
+    assert (
+        hugging_face_instance.api.token == "test_token"
+    )  # Check if api is initialized correctly
+    assert hugging_face_instance.dataset is None
+    assert hugging_face_instance.save_path is None
+    assert hugging_face_instance.image_key is None
+    assert hugging_face_instance.label_key is None
+    assert hugging_face_instance.bbox_key is None
+    assert hugging_face_instance.bbox_label_names is None
