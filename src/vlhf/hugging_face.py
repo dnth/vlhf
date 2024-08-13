@@ -21,7 +21,7 @@ from tqdm.auto import tqdm
 if TYPE_CHECKING:
     from vlhf.visual_layer import VisualLayer
 
-HF_TOKEN = "asdfqjw;lkj-235lkj"
+HF_TOKEN = "hf_IesnIaCMNhZjIJhBNojzaYPETqfRLubet"
 
 
 def is_one_indexed(dataset: Dataset) -> bool:
