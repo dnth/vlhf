@@ -35,7 +35,7 @@ jobs:
         cd ..
         rm -rf vl-research
     
-    - name: Install current package
+    - name: Install vlhf package
       run: pip install .
     
     - name: Run tests
