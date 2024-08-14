@@ -33,6 +33,7 @@ jobs:
         cd vl-research
         pip install .
         cd ..
+        rm -rf vl-research
     
     - name: Install current package
       run: pip install .
