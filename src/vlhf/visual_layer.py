@@ -90,7 +90,7 @@ class VisualLayer:
         image_labels = self._get_image_labels()
         object_labels = self._get_object_labels()
         image_issues = self._get_image_issues()
-        # TODO: get object issues
+        object_issues = self._get_object_issues()
 
         vl_dataset = images.join(
             image_labels, left_on="id", right_on="image_id", how="left"
@@ -101,8 +101,14 @@ class VisualLayer:
         )
 
         vl_dataset = vl_dataset.join(
+            object_issues, left_on="id", right_on="image_id", how="left"
+        )
+
+        vl_dataset = vl_dataset.join(
             image_issues, left_on="id", right_on="image_id", how="left"
-        ).select("image_uri", "image_label", "image_issues", "object_labels")
+        ).select(
+            "image_uri", "image_label", "image_issues", "object_labels", "object_issues"
+        )
 
         self.dataset = vl_dataset
         return vl_dataset
@@ -179,15 +185,13 @@ class VisualLayer:
     def _get_image_issues(self) -> pl.DataFrame:
         try:
             issues = pl.read_database_uri(
-                f"SELECT * FROM image_issues WHERE dataset_id = '{self.dataset_id}'",
+                f"SELECT * FROM image_issues WHERE dataset_id = '{self.dataset_id}' AND cause IS NULL",
                 self.pg_uri,
             )
-            logger.info(f"Retrieved {len(issues)} image issues")
 
             issues_types = pl.read_database_uri("SELECT * FROM issue_type", self.pg_uri)
 
             issues = issues.join(issues_types, left_on="type_id", right_on="id")
-            issues = issues.filter(pl.col("cause").is_null())
             issues = issues.select(
                 "image_id",
                 image_issues=pl.struct(
@@ -198,6 +202,7 @@ class VisualLayer:
                 ),
             )
             issues = issues.group_by("image_id").all()
+            logger.info(f"Retrieved {len(issues)} images with image-level issues")
             return issues
 
         except Exception as e:
@@ -205,4 +210,28 @@ class VisualLayer:
             raise
 
     def _get_object_issues(self) -> pl.DataFrame:
-        raise NotImplementedError
+        try:
+            issues = pl.read_database_uri(
+                f"SELECT * FROM image_issues WHERE dataset_id = '{self.dataset_id}' AND cause IS NOT NULL",
+                self.pg_uri,
+            )
+
+            issues_types = pl.read_database_uri("SELECT * FROM issue_type", self.pg_uri)
+
+            issues = issues.join(issues_types, left_on="type_id", right_on="id")
+            issues = issues.select(
+                "image_id",
+                object_issues=pl.struct(
+                    "confidence",
+                    "description",
+                    duplicate_group_id="issue_subject_id",
+                    issue_type="name",
+                    bbox_id="cause",
+                ),
+            )
+            issues = issues.group_by("image_id").all()
+            logger.info(f"Retrieved {len(issues)} images with object-level issues")
+            return issues
+        except Exception as e:
+            logger.error(f"Error retrieving object issues: {str(e)}")
+            raise
