@@ -29,7 +29,7 @@ jobs:
       env:
         VL_RESEARCH_PAT: ${{ secrets.VL_RESEARCH_PAT }}
       run: |
-        git clone https://${VL_RESEARCH_PAT}@github.com/visual-layer/vl-research.git
+        git clone https://${VL_RESEARCH_PAT}@github.com/visual-layer/vl-research.git --depth 1
         cd vl-research
         pip install -e .
         cd ..
