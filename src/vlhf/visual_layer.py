@@ -164,9 +164,10 @@ class VisualLayer:
                     label="object_label", bbox="bbox", bbox_id="bbox_id"
                 ),
             )
-            objects = objects.group_by("image_id").all()
 
             logger.info(f"Retrieved {len(objects)} object labels")
+            objects = objects.group_by("image_id").all()
+
             return objects
         except Exception as e:
             logger.error(f"Error retrieving object labels: {str(e)}")
