@@ -25,7 +25,7 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
     
-    - name: Clone and install vl-research
+    - name: Install vl-research
       env:
         VL_RESEARCH_PAT: ${{ secrets.VL_RESEARCH_PAT }}
       run: |
@@ -34,11 +34,11 @@ jobs:
         pip install -e .
         cd ..
     
-    - name: Install current package
+    - name: Install vlhf package
       run: pip install .
     
     - name: Run tests
       run: pytest -v --ignore=vl-research
 
-    - name: MyPy
+    - name: Mypy check
       run: mypy src/
