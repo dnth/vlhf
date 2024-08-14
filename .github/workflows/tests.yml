@@ -27,9 +27,9 @@ jobs:
     
     - name: Install private package
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VL_RESEARCH_PAT: ${{ secrets.VL_RESEARCH_PAT }}
       run: |
-        git clone https://x-access-token:${GITHUB_TOKEN}@github.com/visual-layer/vl-research.git
+        git clone https://x-access-token:${VL_RESEARCH_PAT}@github.com/visual-layer/vl-research.git
         cd vl-research
         pip install .
         cd ..
