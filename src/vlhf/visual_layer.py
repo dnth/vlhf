@@ -48,6 +48,7 @@ class VisualLayer:
                 [
                     pl.col("image_issues").fill_null([]),
                     pl.col("object_labels").fill_null([]),
+                    pl.col("object_issues").fill_null([]),
                 ]
             )
 
@@ -73,13 +74,23 @@ class VisualLayer:
                         "bbox_id": Value("string"),
                     }
                 ],
+                "object_issues": [
+                    {
+                        "confidence": Value("float64"),
+                        "description": Value("string"),
+                        "duplicate_group_id": Value("string"),
+                        "issue_type": Value("string"),
+                        "bbox_id": Value("string"),
+                    }
+                ],
             }
         )
         dataset = dataset.cast(features)
         hf_session.dataset = dataset
 
-        logger.info(f"Pushing dataset to HF repository: {hf_repo_id}")
+        logger.info("Pushing dataset to HF repository")
         dataset.push_to_hub(hf_repo_id, token=hf_session.token)
+        logger.info(f"Dataset successfully pushed to HF repository: {hf_repo_id}")
 
     def get_dataset(self, dataset_id: str) -> pl.DataFrame:
         self.dataset_id = dataset_id
