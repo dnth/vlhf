@@ -1,4 +1,4 @@
-name: Pytest Tests
+name: CI
 
 on:
   push:
@@ -39,3 +39,6 @@ jobs:
     
     - name: Run tests
       run: pytest -v --ignore=vl-research
+
+    - name: MyPy
+      run: mypy src/
