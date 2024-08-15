@@ -126,17 +126,42 @@ hf.list_datasets(search="visual")
 Download a dataset from Hugging Face
 
 ```python
+# for image classification
 hf.download_dataset(dataset_id="lewtun/dog_food", image_key="image", label_key="label")
+
+# for object detection
+hf.download_dataset("rishitdagli/cppe-5", 
+                    image_key="image", 
+                    bbox_key="objects", 
+                    bbox_label_names=["coverall", "face_shield", "gloves", "goggles", "mask"])
 ```
 Parameters:
 + `dataset_id`: The dataset ID on Hugging Face datasets.
 + `image_key`: The column name in the dataset that contains PIL images.
 + `label_key`: The column name containing image classification labels.
++ `bbox_key` (Optional): The column name containing object detection bounding boxes.
++ `bbox_label_names` (Optional): A list of object detection label names.
 + `num_images` (Optional): The top N number of images to download.
 
 
-> [!NOTE]  
-> Not all datasets use `"image"` and `"label"` as their column names. Adjust these parameters based on the specific dataset structure.
+> [!WARNING]  
+> Not all datasets use `"image"`, `"label"`, or `"objects"` as their column names. Adjust these parameters based on the specific dataset structure.
+> Currently only the COCO object detection annotation is supported. For example here's a sample row in the dataset:
+> ```python
+> { "id": [ 114, 115, 116, 117 ], 
+>   "area": [ 3796, 1596, 152768, 81002 ], 
+>   "bbox": [ 
+>             [ 302, 109, 73, 52 ], 
+>             [ 810, 100, 57, 28 ], 
+>             [ 160, 31, 248, 616 ], 
+>             [ 741, 68, 202, 401 ] 
+>           ], 
+>   "category": [ 4, 4, 0, 0 ] 
+> }
+> ```
+> The annotations are in the format of COCO dataset annotations. The `bbox` key contains the bounding box coordinates in the format `[x, y, width, height]` and the `category` key contains the category ID of the object.
+> 
+> See more - https://huggingface.co/datasets/rishitdagli/cppe-5
 
 Upload to Visual Layer
 
