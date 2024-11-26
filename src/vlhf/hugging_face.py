@@ -231,8 +231,11 @@ class HuggingFace:
             df = convert_to_vl_object_annotations(self.dataset)
             df.to_parquet(f"{self.save_path}/object_annotations.parquet")
 
-        # if no dataset_name is provided, use the name of the dataset_id
+        # Use provided dataset_name or fallback to save_path name
         if dataset_name is None and self.save_path is not None:
             dataset_name = self.save_path.split("/")[-1]
+    
+        # Create and upload tar archive
+        if self.save_path is not None and dataset_name is not None:
             shutil.make_archive(self.save_path, "tar", self.save_path)
             vl_session.create_dataset(dataset_name, f"{self.save_path}.tar")
